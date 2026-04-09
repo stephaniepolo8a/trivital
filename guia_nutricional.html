@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Nutricional Inteligente – TRIVITAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container { position: relative; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; height: 300px; max-height: 350px; }
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .category-btn.active { background-color: #10b981; color: white; border-color: #10b981; }
+        .day-btn.active { background-color: #8b5cf6; color: white; border-color: #8b5cf6; box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.3); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen selection:bg-emerald-200 selection:text-emerald-900">
+
+    <div class="max-w-6xl mx-auto px-4 py-10 space-y-16">
+
+        <!-- HEADER -->
+        <header class="text-center space-y-4">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-2 shadow-sm text-3xl">🥑</div>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">Tu Guía Nutricional</h1>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">Un plan estructurado para perder peso de forma saludable. Explora tus alimentos permitidos, visualiza tu plato ideal y sigue tu menú semanal día a día.</p>
+            <div class="pt-4 no-print flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button onclick="window.print()" class="inline-flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white font-bold rounded-full hover:bg-emerald-700 transition-colors shadow-md">
+                    📥 Guardar / Imprimir como PDF
+                </button>
+                <a href="index.html" class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-600 font-semibold rounded-full hover:bg-slate-50 transition-colors shadow-sm">
+                    ← Volver al inicio
+                </a>
+            </div>
+            <p class="text-xs text-slate-500 no-print">En el diálogo de impresión selecciona <strong>"Guardar como PDF"</strong> para descargar.</p>
+        </header>
+
+        <!-- SECCIÓN 1: SEMÁFORO NUTRICIONAL -->
+        <section class="space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-slate-800 flex items-center justify-center gap-2">
+                    <span>🚦</span> El Semáforo de Alimentos
+                </h2>
+                <p class="text-slate-600 mt-2 max-w-3xl mx-auto">Conocer qué alimentos nutren tu cuerpo y cuáles bloquean tu progreso es el primer paso.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-6">
+                    <h3 class="text-xl font-bold text-rose-600 mb-4 flex items-center gap-2"><span>❌</span> Lo que DEBES EVITAR</h3>
+                    <div class="space-y-3" id="forbidden-list"></div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-emerald-100 p-6">
+                    <h3 class="text-xl font-bold text-emerald-600 mb-4 flex items-center gap-2"><span>✅</span> Lo que SÍ PUEDES COMER</h3>
+                    <p class="text-sm text-slate-500 mb-4">Selecciona una categoría para ver tus opciones:</p>
+                    <div class="flex flex-wrap gap-2 mb-6" id="category-filters"></div>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 min-h-[150px]">
+                        <h4 id="active-category-title" class="font-bold text-slate-700 mb-2">Grasas Buenas</h4>
+                        <div id="active-category-items" class="flex flex-wrap gap-2 fade-in"></div>
+                        <p id="active-category-note" class="text-xs text-amber-600 mt-3 font-medium hidden"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: EL PLATO IDEAL -->
+        <section class="bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden">
+            <div class="grid md:grid-cols-2">
+                <div class="p-8 md:p-12 flex flex-col justify-center bg-slate-800 text-white">
+                    <h2 class="text-3xl font-bold mb-4 flex items-center gap-2"><span>🍽️</span> Estructura de tu Plato</h2>
+                    <p class="text-slate-300 mb-6 text-lg">La clave del éxito no es solo QUÉ comes, sino en qué PROPORCIONES.</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-xl">🥗</span>
+                            <div>
+                                <strong class="text-emerald-400">50% Vegetales:</strong>
+                                <p class="text-sm text-slate-400">Hojas verdes, brócoli, pepino. Aportan volumen, fibra y saciedad.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-xl">🥩</span>
+                            <div>
+                                <strong class="text-rose-400">25% Proteína:</strong>
+                                <p class="text-sm text-slate-400">El tamaño de la <strong>palma de tu mano</strong>. Fundamental para mantener músculo.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-xl">🥑</span>
+                            <div>
+                                <strong class="text-amber-400">25% Grasas/Carbohidratos:</strong>
+                                <p class="text-sm text-slate-400">Aguacate, nueces o la porción de harina/grano permitida al día.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="p-8 flex items-center justify-center bg-slate-50">
+                    <div class="chart-container">
+                        <canvas id="plateChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: MENÚ SEMANAL -->
+        <section class="space-y-6">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-slate-800 flex items-center justify-center gap-2"><span>📅</span> Menú de 7 Días</h2>
+                <p class="text-slate-600 mt-2 max-w-3xl mx-auto">Puedes variar los ingredientes siempre y cuando estén en la lista verde.</p>
+            </div>
+            <div class="flex overflow-x-auto no-scrollbar gap-3 pb-2 justify-start md:justify-center px-2">
+                <button class="day-btn active flex-shrink-0 px-6 py-3 rounded-full border border-slate-300 bg-white font-semibold transition-all" data-day="1">Día 1</button>
+                <button class="day-btn flex-shrink-0 px-6 py-3 rounded-full border border-slate-300 bg-white text-slate-600 font-semibold transition-all hover:bg-slate-100" data-day="2">Día 2</button>
+                <button class="day-btn flex-shrink-0 px-6 py-3 rounded-full border border-slate-300 bg-white text-slate-600 font-semibold transition-all hover:bg-slate-100" data-day="3">Día 3</button>
+                <button class="day-btn flex-shrink-0 px-6 py-3 rounded-full border border-slate-300 bg-white text-slate-600 font-semibold transition-all hover:bg-slate-100" data-day="4">Día 4</button>
+                <button class="day-btn flex-shrink-0 px-6 py-3 rounded-full border border-slate-300 bg-white text-slate-600 font-semibold transition-all hover:bg-slate-100" data-day="5">Día 5</button>
+                <button class="day-btn flex-shrink-0 px-6 py-3 rounded-full border border-slate-300 bg-white text-slate-600 font-semibold transition-all hover:bg-slate-100" data-day="6">Día 6</button>
+                <button class="day-btn flex-shrink-0 px-6 py-3 rounded-full border border-slate-300 bg-white text-slate-600 font-semibold transition-all hover:bg-slate-100" data-day="7">Día 7</button>
+            </div>
+            <div id="menu-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 grid md:grid-cols-3 gap-6 fade-in"></div>
+            <div class="bg-violet-50 rounded-2xl p-6 border border-violet-100 mt-6">
+                <h3 class="text-lg font-bold text-violet-800 mb-4 flex items-center gap-2"><span>⏱️</span> Opciones de Meriendas (Snacks)</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <strong class="block text-violet-700 mb-1">Media Mañana:</strong>
+                        <p class="text-sm text-slate-700">Porción de fruta (sandía, melón, naranja, manzana, frutos rojos) + bebida aromática. Opcional: pedazo de queso o yogurt griego.</p>
+                    </div>
+                    <div>
+                        <strong class="block text-violet-700 mb-1">Media Tarde:</strong>
+                        <p class="text-sm text-slate-700">Puñado de frutos secos (almendras, marañones, pistachos) o porción de aguacate + bebida caliente. Batido de proteína si entrenas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: TIPS Y RECETAS -->
+        <section class="space-y-6">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-slate-800 flex items-center justify-center gap-2"><span>💡</span> Tips, Aderezos y Recetas</h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-amber-50 rounded-2xl p-6 border border-amber-200">
+                    <h3 class="text-xl font-bold text-amber-800 mb-3 flex items-center gap-2">✨ Golden Milk</h3>
+                    <p class="text-sm text-amber-700 mb-3">Infusión ideal para calmar la ansiedad y fortalecer el sistema inmunológico.</p>
+                    <ul class="text-sm text-slate-700 space-y-1 list-disc pl-4 marker:text-amber-500">
+                        <li>Leche de coco (base)</li>
+                        <li>Jengibre</li>
+                        <li>Canela</li>
+                        <li>Cardamomo en polvo</li>
+                        <li>Cúrcuma</li>
+                        <li>Pizca de pimienta negra</li>
+                        <li>Gotas de Stevia</li>
+                    </ul>
+                </div>
+                <div class="bg-emerald-50 rounded-2xl p-6 border border-emerald-200">
+                    <h3 class="text-xl font-bold text-emerald-800 mb-3 flex items-center gap-2">🥗 Aderezos Perfectos</h3>
+                    <p class="text-sm text-emerald-700 mb-3">Para las ensaladas siempre usa un buen aderezo preparado en casa.</p>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-lg text-sm text-slate-700 shadow-sm">
+                            <strong>Opción 1:</strong> Limón, aceite de oliva extra virgen, Stevia en gotas, 1 cda mostaza dijon, vinagre, mayonesa artesanal, pimienta.
+                        </div>
+                        <div class="bg-white p-3 rounded-lg text-sm text-slate-700 shadow-sm">
+                            <strong>Opción 2:</strong> Vinagre balsámico y aceite de oliva.
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">📌 Notas Clave</h3>
+                    <ul class="text-sm text-slate-700 space-y-3">
+                        <li class="flex gap-2"><span class="text-rose-500">✓</span><span><strong>Cremas de vegetales:</strong> Solo con vegetales cocidos, leche de almendras/coco, especias, aceite oliva/aguacate. Licuar y agregar semillas.</span></li>
+                        <li class="flex gap-2"><span class="text-rose-500">✓</span><span>Cero leche de vaca. Si no usas vegetales, usa agua.</span></li>
+                        <li class="flex gap-2"><span class="text-rose-500">✓</span><span>No compres nada que no esté en esta guía.</span></li>
+                        <li class="flex gap-2"><span class="text-rose-500">✓</span><span>Si hay ansiedad entre comidas: puñado de frutos secos + bebida caliente.</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center pt-8 border-t border-slate-200 text-slate-500 text-sm">
+            <p>Guía Nutricional TRIVITAL • Tu transformación comienza en el plato 💜</p>
+        </footer>
+    </div>
+
+    <script>
+        const forbiddenFoods = [
+            { title: "Azúcar y Endulzantes", items: "Azúcar blanca, morena, edulcorantes artificiales (sucralosa, aspartame, maltitol), sirope, miel, agave, fructosa, lactosa, maltodextrina, frutas deshidratadas." },
+            { title: "Granos y Cereales", items: "Pan blanco, tortas, pasteles, galletas, cereales de caja, granolas, barras de granola/proteína." },
+            { title: "Comidas Procesadas", items: "Papas de paquete, dulces, postres, donas, chocolates, pancakes, wafles, sopas de caja." },
+            { title: "Bebidas", items: "Gaseosas, alcohol, café/té endulzado, leche de vaca (ni deslactosada/descremada), leches vegetales endulzadas, jugos de fruta (así sean naturales)." },
+            { title: "Otros", items: "Maní." }
+        ];
+
+        const allowedFoods = {
+            grasas: { title: "Grasas Buenas", note: "", items: ["Aguacate", "Mantequilla Ghee", "Aceite de coco", "Aceite de oliva extra virgen", "Aceite de aguacate/ajonjolí", "Semillas (chía, ajonjolí)", "Aceitunas", "Cremas (almendras, marañón, macadamia)"] },
+            proteinas: { title: "Proteínas", note: "Porción: tamaño de la palma de tu mano.", items: ["Huevos", "Champiñones", "Tofu", "Carne de res magra", "Pechuga de pollo", "Pescado", "Atún"] },
+            vegetales: { title: "Vegetales No Almidonados", note: "¡Come en abundancia!", items: ["Espinaca", "Rúgula", "Lechuga", "Col rizada", "Col morada", "Alcachofa", "Remolacha", "Coliflor", "Apio", "Pepino cohombro", "Zucchini", "Repollo", "Pimentón", "Espárragos", "Champiñones portobello", "Tomates", "Rábano", "Zanahorias", "Berenjenas"] },
+            fermentados: { title: "Productos Fermentados", note: "", items: ["Yogurt griego (sin azúcar)", "Kéfir", "Quesos curados/madurados", "Queso paipa", "Queso parmesano", "Queso de cabra", "Queso feta", "Vino tinto"] },
+            nueces: { title: "Nueces y Semillas", note: "", items: ["Almendras", "Nueces pecanas", "Pistachos", "Marañones", "Semillas de girasol", "Semillas de calabaza"] },
+            harinas: { title: "Harinas", note: "⚠️ Máximo UNA VEZ al día.", items: ["Avena", "Quínoa", "Arroz blanco", "Arroz integral", "Maíz (o productos de maíz)"] },
+            granos: { title: "Granos", note: "⚠️ Máximo UNA VEZ por semana.", items: ["Frijoles verdes", "Lentejas", "Garbanzos", "Arvejas", "Humus"] },
+            frutas: { title: "Frutas Permitidas", note: "", items: ["Moras", "Fresas", "Frambuesa", "Arándanos", "Toronja (pomelo)", "Sandía", "Melón", "Papaya"] },
+            condimentos: { title: "Condimentos", note: "", items: ["Mostaza dijon", "Mayonesa artesanal", "Sour cream / suero", "Jugo de limón", "Vinagre blanco / manzana", "Pepinillos", "Especias"] },
+            bebidas: { title: "Bebidas e Hidratación", note: "Endulzar SOLO con Stevia 100%.", items: ["Agua", "Jugo verde (solo vegetales)", "Leche sin azúcar (coco, almendras)", "Agua con limón", "Limonada de coco (con Stevia)", "Agua de pepino"] }
+        };
+
+        const menuData = {
+            1: { desayuno: "Dos huevos + una clara al gusto (fritos, revueltos o cocidos). Medio aguacate hass o 1/4 criollo. Café en agua o leche vegetal sin endulzar.", almuerzo: "Pollo con champiñones (sin salsa blanca). Espárragos asados. Ensalada (espinaca, rúgula, lechuga, tomates, col morada, queso madurado, aceite oliva, limón, vinagre). Media papa grande al vapor o porción de arroz.", cena: "Crema de brócoli. Porción de proteína (pollo, pescado o atún)." },
+            2: { desayuno: "Yogurt griego con frutos rojos. Agregar frutos secos (nueces, marañones, almendras) y semillas de chía.", almuerzo: "Vegetales salteados (brócoli, pimentón, cebolla, zucchini). Carne de res asada. Medio plátano cocinado.", cena: "Ensalada de atún con aguacate." },
+            3: { desayuno: "2 huevos tibios completos sobre pan integral. Café, té o aromática. Porción de fruta.", almuerzo: "Burrito en hojas de lechuga relleno de pollo desmechado, vegetales salteados, cebolla, tomate, sour cream. Salsa picante opcional.", cena: "Filete de tilapia asado. Ensalada de rúcula, lechuga, espinaca y aguacate." },
+            4: { desayuno: "Porción de fruta. Queso campesino o paipa fundido. Café, té o aromática.", almuerzo: "Pollo o pescado al gusto. Ensalada (col rizada/repollo morado, champiñones, espinaca, queso, aguacate julianas, aceite de oliva, semillas). Porción de arroz o media papa grande.", cena: "Tortilla de huevo con espinacas y tomate." },
+            5: { desayuno: "Huevos con tomate y cebolla en aceite de coco. Una toronja (pomelo) o naranja. Café, té o aromática.", almuerzo: "Carne de res, pollo o pescado asado/guisado. Berenjenas salteadas con zucchini. Ensalada (aceitunas, col rizada, rúcula, aceite oliva, limón, vinagre). Pocillo de pasta.", cena: "Tortilla de espinaca." },
+            6: { desayuno: "Yogurt griego sin azúcar. Frutos rojos o amarillos. Semillas de chía o 2 cdas de avena.", almuerzo: "Lasaña de carne de res o pollo (salsa de tomate natural y queso parmesano). Medio aguacate hass.", cena: "Wrap de lechuga con pollo o res, vegetales salteados y queso." },
+            7: { desayuno: "Huevos al gusto. Café, té o aromática. Porción de fruta picada. Arepa de maíz pelado.", almuerzo: "Pollo o carne guisada/asada. Grano a su gusto. Ensalada (lechugas, tomate, cebolla, zanahoria, aguacate).", cena: "Crema de champiñones o sopa de cebolla. Porción de proteína." }
+        };
+
+        function initTrafficLight() {
+            const forbiddenContainer = document.getElementById('forbidden-list');
+            forbiddenFoods.forEach(f => {
+                forbiddenContainer.innerHTML += `<div class="p-3 bg-rose-50 rounded-lg border border-rose-100"><strong class="text-rose-800 block text-sm">${f.title}</strong><span class="text-sm text-slate-600">${f.items}</span></div>`;
+            });
+            const filtersContainer = document.getElementById('category-filters');
+            Object.keys(allowedFoods).forEach((key, index) => {
+                const isActive = index === 0 ? 'active' : 'bg-slate-100 text-slate-600 hover:bg-slate-200';
+                filtersContainer.innerHTML += `<button class="category-btn px-4 py-2 rounded-full text-sm font-semibold transition-colors border border-transparent ${isActive}" data-category="${key}">${allowedFoods[key].title}</button>`;
+            });
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.category-btn').forEach(b => { b.classList.remove('active'); b.classList.add('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200'); });
+                    e.target.classList.add('active');
+                    e.target.classList.remove('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+                    renderAllowedCategory(e.target.dataset.category);
+                });
+            });
+            renderAllowedCategory(Object.keys(allowedFoods)[0]);
+        }
+
+        function renderAllowedCategory(key) {
+            const data = allowedFoods[key];
+            document.getElementById('active-category-title').textContent = data.title;
+            const noteEl = document.getElementById('active-category-note');
+            if (data.note) { noteEl.textContent = data.note; noteEl.classList.remove('hidden'); } else { noteEl.classList.add('hidden'); }
+            const itemsContainer = document.getElementById('active-category-items');
+            itemsContainer.classList.remove('fade-in');
+            void itemsContainer.offsetWidth;
+            itemsContainer.innerHTML = data.items.map(item => `<span class="inline-block px-3 py-1 bg-white border border-slate-200 rounded-md text-sm text-slate-700 shadow-sm">${item}</span>`).join('');
+            itemsContainer.classList.add('fade-in');
+        }
+
+        function initMenu() {
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.day-btn').forEach(b => { b.classList.remove('active'); b.classList.add('text-slate-600', 'hover:bg-slate-100'); });
+                    e.target.classList.add('active');
+                    e.target.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                    renderMenu(e.target.dataset.day);
+                });
+            });
+            renderMenu("1");
+        }
+
+        function renderMenu(day) {
+            const data = menuData[day];
+            const container = document.getElementById('menu-content');
+            container.classList.remove('fade-in');
+            void container.offsetWidth;
+            container.innerHTML = `
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-100 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-3 opacity-10 text-4xl">🍳</div>
+                    <h4 class="font-bold text-lg text-slate-800 mb-2 relative z-10">Desayuno</h4>
+                    <p class="text-slate-600 text-sm relative z-10 leading-relaxed">${data.desayuno}</p>
+                </div>
+                <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-100 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-3 opacity-10 text-4xl">🥗</div>
+                    <h4 class="font-bold text-lg text-emerald-800 mb-2 relative z-10">Almuerzo</h4>
+                    <p class="text-emerald-700 text-sm relative z-10 leading-relaxed">${data.almuerzo}</p>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-100 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-3 opacity-10 text-4xl">🍲</div>
+                    <h4 class="font-bold text-lg text-slate-800 mb-2 relative z-10">Cena</h4>
+                    <p class="text-slate-600 text-sm relative z-10 leading-relaxed">${data.cena}</p>
+                </div>`;
+            container.classList.add('fade-in');
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('plateChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Vegetales', 'Proteína Magra', 'Grasas/Carbohidratos'],
+                    datasets: [{ data: [50, 25, 25], backgroundColor: ['#34d399', '#fb7185', '#fbbf24'], borderWidth: 0, hoverOffset: 4 }]
+                },
+                options: {
+                    maintainAspectRatio: false, cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 20, font: { family: "'Inter', sans-serif" } } },
+                        tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 12, bodyFont: { size: 14 }, callbacks: { label: (ctx) => ' ' + ctx.label + ': ' + ctx.parsed + '%' } }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { initTrafficLight(); initMenu(); initChart(); });
+    </script>
+</body>
+</html>
