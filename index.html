@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -694,6 +695,25 @@
 </div>
 </footer>
 <script>
+    /* ── Supabase ── */
+    const SUPA_URL = 'https://bfbxykeppzaqfufdyhoj.supabase.co';
+    const SUPA_KEY = 'sb_publishable_OMo7boP0-6yWwgb7wPqTUg_TLTqVoUc';
+    const db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+    async function guardarLead(peso, meta, tel, fuente) {
+        try {
+            await db.from('leads').insert([{
+                peso_actual: peso || null,
+                meta_kg:     meta || null,
+                telefono:    tel  || null,
+                fuente:      fuente || 'boton_wa'
+            }]);
+        } catch(e) {
+            // Si falla Supabase, el flujo de WhatsApp continúa igual
+            console.warn('Supabase:', e);
+        }
+    }
+
     const WA_NUMBER = '573245712631';
     const WA_MESSAGE = [
         "\u00a1Hola! Qu\u00e9 gusto saludarte desde TRIVITAL.",
@@ -805,6 +825,7 @@
         document.querySelectorAll('.wa-link').forEach(function (el) {
             el.addEventListener('click', function (e) {
                 e.preventDefault();
+                guardarLead(null, null, null, 'boton_cta');
                 openWhatsApp('');
             });
         });
@@ -815,10 +836,13 @@
             const peso = document.getElementById('peso-input').value;
             const meta = document.getElementById('meta-input').value;
             const tel  = this.querySelector('input[type="tel"]').value;
+            // Guardar lead en Supabase
+            guardarLead(peso, meta, tel, 'formulario_web');
+            // Abrir WhatsApp
             let extra = '';
             if (peso) extra += 'Mi peso actual: ' + peso + ' kg. ';
-            if (meta) extra += 'Me gustaría bajar: ' + meta + ' kg. ';
-            if (tel)  extra += 'Mi número: ' + tel;
+            if (meta) extra += 'Me gustar\u00eda bajar: ' + meta + ' kg. ';
+            if (tel)  extra += 'Mi n\u00famero: ' + tel;
             openWhatsApp(extra.trim());
         });
     });
